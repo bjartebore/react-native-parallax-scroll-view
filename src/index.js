@@ -26,10 +26,12 @@ const interpolate = (value, opts) => {
 const IPropTypes = {
 	backgroundColor: string,
 	backgroundScrollSpeed: number,
-	fadeOutForeground: bool,
-	fadeOutBackground: bool,
 	contentBackgroundColor: string,
+	contentContainerStyle: ViewPropTypes.style,
+	fadeOutBackground: bool,
+	fadeOutForeground: bool,
 	onChangeHeaderVisibility: func,
+	outputScaleValue: number,
 	parallaxHeaderHeight: number.isRequired,
 	renderBackground: func,
 	renderFixedHeader: func,
@@ -37,8 +39,7 @@ const IPropTypes = {
 	renderScrollComponent: func,
 	renderStickyHeader: func,
 	stickyHeaderHeight: number,
-	contentContainerStyle: ViewPropTypes.style,
-	outputScaleValue: number
+	visibilityAsPercentage: bool,
 }
 
 class ParallaxScrollView extends Component {
@@ -64,10 +65,10 @@ class ParallaxScrollView extends Component {
 		this._footerHeight = 0
 	}
 
-	animatedEvent = Animated.event(
-		[{ nativeEvent: { contentOffset: { y: this.scrollY } } }],
-		{ useNativeDriver: true }
-	)
+	// animatedEvent = Animated.event(
+	// 	[{ nativeEvent: { contentOffset: { y: this.scrollY } } }],
+	// 	{ useNativeDriver: true }
+	// )
 
 	render() {
 		const {
@@ -176,6 +177,7 @@ class ParallaxScrollView extends Component {
 			parallaxHeaderHeight,
 			stickyHeaderHeight,
 			onChangeHeaderVisibility,
+			visibilityAsPercentage,
 			onScroll: prevOnScroll = e => {}
 		} = this.props
 
@@ -183,8 +185,9 @@ class ParallaxScrollView extends Component {
 
 		// This optimization wont run, since we update the animation value directly in onScroll event
 		// this._maybeUpdateScrollPosition(e)
-
-		if (e.nativeEvent.contentOffset.y >= p) {
+		if (visibilityAsPercentage) {
+			onChangeHeaderVisibility(1 - Math.max(0,Math.min(1, e.nativeEvent.contentOffset.y / p)));
+		} else if (e.nativeEvent.contentOffset.y >= p) {
 			onChangeHeaderVisibility(false)
 		} else {
 			onChangeHeaderVisibility(true)
